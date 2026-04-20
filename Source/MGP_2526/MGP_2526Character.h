@@ -49,6 +49,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* EvadeAction;
+
+	bool bEvadebuttonPressed;
+
 public:
 
 	/** Constructor */
@@ -66,6 +71,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void Evade(const FInputActionValue& Value);
 
 public:
 
