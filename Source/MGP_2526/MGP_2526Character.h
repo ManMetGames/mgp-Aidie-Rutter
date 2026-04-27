@@ -72,7 +72,7 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	void Evade(const FInputActionValue& Value);
+	//void Evade(const FInputActionValue& Value);
 
 public:
 
