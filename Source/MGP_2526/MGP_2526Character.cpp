@@ -104,6 +104,7 @@ void AMGP_2526Character::Look(const FInputActionValue& Value)
 
 void AMGP_2526Character::DoMove(float Right, float Forward)
 {
+	FVector2D MovementVector = Value.Get<FVector2D>();
 	//if (EvadeComponent)
 	//	EvadeComponent->SendMovementVector(MovemntVector);
 	//if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
@@ -127,7 +128,9 @@ void AMGP_2526Character::DoMove(float Right, float Forward)
 }
 
 void AMGP_2526Character::DoLook(float Yaw, float Pitch)
-{
+
+FVector2D LookAxisVector = Value.Get<FVector2D>();
+if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
 	if (GetController() != nullptr)
 	{
 		// add yaw and pitch input to controller

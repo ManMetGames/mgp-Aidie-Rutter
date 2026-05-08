@@ -53,7 +53,9 @@ protected:
 	UInputAction* EvadeAction;
 
 	bool bEvadebuttonPressed;
-
+	
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	class UEvadeComponent* EvadeComponent;
 public:
 
 	/** Constructor */

@@ -6,6 +6,16 @@
 #include "Components/ActorComponent.h"
 #include "EvadeComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class EEvadeDirection : uint8
+{
+	none UMETA(DisplayName = "None"),
+	Evade_Forward UMETA(DisplayName = "Evade_Forward"),
+	Evade_Left UMETA(DisplayName = "Evade_Left"),
+	Evade_Right UMETA(DisplayName = "Evade_Right"),
+	Evade_Backward UMETA(DisplayName = "Evade_Backward")
+};
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MGP_2526_API UEvadeComponent : public UActorComponent
@@ -20,9 +30,49 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void SetEvadeDirection(FVector2D MovementVector);
 
-		
+private:
+	class AMGP_2526Character* Character;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	bool bIsEvading;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	EEvadeDirection EvadeDirection;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EvadeMontage;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	FName EvadeSectionName;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* TransparentMaterial;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	UMaterialInterface* WeaponMaterial;	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
+	USoundBase* EvadeSound;
+
+	FOnMontageBlendingOutStarted OnMontageBlendingOutStarted;
+	FOnMontageBlendedInEnded OnMontageBlendingInEnded;
+
+	void OnEvadeMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
+	void OnEvadeMontageBlendedInEnded(UAnimMontage* Montage);
+
+	FTimerHandle ResetEvadeDirectionTimerHandle;
+
+	float ResetEvadeDirectionTimeRate;
+	void ResetEvadeDirection();
+
+
+
+	
+public:
+	void SendMovementVector(FVector2D MovementVector);
+	void Evade(AMGP_2526Character* MGP_2526Character);
+
+	FORCEINLINE bool GetIsEvading() const { return bIsEvading; }
 };
