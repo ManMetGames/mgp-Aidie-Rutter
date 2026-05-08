@@ -9,11 +9,11 @@
 UENUM(BlueprintType)
 enum class EEvadeDirection : uint8
 {
-	none UMETA(DisplayName = "None"),
-	Evade_Forward UMETA(DisplayName = "Evade_Forward"),
-	Evade_Left UMETA(DisplayName = "Evade_Left"),
-	Evade_Right UMETA(DisplayName = "Evade_Right"),
-	Evade_Backward UMETA(DisplayName = "Evade_Backward")
+	None             UMETA(DisplayName = "None"),
+	Evade_Forward    UMETA(DisplayName = "Evade_Forward"),
+	Evade_Left       UMETA(DisplayName = "Evade_Left"),
+	Evade_Right      UMETA(DisplayName = "Evade_Right"),
+	Evade_Backward   UMETA(DisplayName = "Evade_Backward")
 };
 
 
@@ -33,7 +33,7 @@ protected:
 	void SetEvadeDirection(FVector2D MovementVector);
 
 private:
-	class AMGP_2526Character* Character;
+	class AMGP_2526Character* MainCharacterRef; 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
 	bool bIsEvading;
@@ -72,7 +72,7 @@ private:
 	
 public:
 	void SendMovementVector(FVector2D MovementVector);
-	void Evade(AMGP_2526Character* MGP_2526Character);
+	void Evade(AMGP_2526Character* MainCharacter);
 
 	FORCEINLINE bool GetIsEvading() const { return bIsEvading; }
 };

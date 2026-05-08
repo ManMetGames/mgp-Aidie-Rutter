@@ -7,9 +7,11 @@
 #include "Logging/LogMacros.h"
 #include "MGP_2526Character.generated.h"
 
+
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UEvadeComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -49,10 +51,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
 
-	UPROPERTY(EditAnywhere, Category = "Input")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	UInputAction* EvadeAction;
 
-	bool bEvadebuttonPressed;
+	bool bEvadeButtonPressed;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
 	class UEvadeComponent* EvadeComponent;
@@ -74,7 +76,7 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	//void Evade(const FInputActionValue& Value);
+	void Evade(const FInputActionValue& Value);
 
 public:
 
@@ -97,9 +99,9 @@ public:
 public:
 
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; };
 
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; };
 };
 

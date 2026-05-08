@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MGP_2526.h"
+#include "EvadeComponent.h"
 
 AMGP_2526Character::AMGP_2526Character()
 {
@@ -46,7 +47,7 @@ AMGP_2526Character::AMGP_2526Character()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	//EvadeComponent = CreateDefaultSubobject<UEvadeComponent>(Text("EvadeComponent"));
+	EvadeComponent = CreateDefaultSubobject<UEvadeComponent>(TEXT("EvadeComponent"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -68,8 +69,8 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
 
-		//EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AMGP_2526Character::Evade);
-		//EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Completed, this, &AMGP_2526Character::Evade);
+		EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AMGP_2526Character::Evade);
+		EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Completed, this, &AMGP_2526Character::Evade);
 		
 	}
 	else
@@ -83,11 +84,11 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	
-	//if (EvadeComponent)
-		//EvadeComponent->SendMovmemtVector(MovementVector);
+	if (EvadeComponent)
+		EvadeComponent->SendMovementVector(MovementVector);
 
-	//if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
-	//if (GetController() == nullptr) return;
+	if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
+	if (GetController() == nullptr) return;
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
@@ -104,10 +105,7 @@ void AMGP_2526Character::Look(const FInputActionValue& Value)
 
 void AMGP_2526Character::DoMove(float Right, float Forward)
 {
-	FVector2D MovementVector = Value.Get<FVector2D>();
-	//if (EvadeComponent)
-	//	EvadeComponent->SendMovementVector(MovemntVector);
-	//if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
+    if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
 
 	if (GetController() != nullptr)
 	{
@@ -128,9 +126,8 @@ void AMGP_2526Character::DoMove(float Right, float Forward)
 }
 
 void AMGP_2526Character::DoLook(float Yaw, float Pitch)
-
-FVector2D LookAxisVector = Value.Get<FVector2D>();
-if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
+{
+	if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
 	if (GetController() != nullptr)
 	{
 		// add yaw and pitch input to controller
@@ -151,18 +148,18 @@ void AMGP_2526Character::DoJumpEnd()
 	StopJumping();
 }
 
-//void AMGP_2526Character::Evade(const FInputActionValue& Value)
-//{
-	//bEvadebuttonPressed = Value.Get<bool>();
-	//if (!EvadeComponent) return;
+void AMGP_2526Character::Evade(const FInputActionValue& Value)
+{
+    bEvadeButtonPressed = Value.Get<bool>();
+	if (!EvadeComponent) return;
 	
-	//if (!EvadeComponent->GetIsEvading() && bEvadeButtonPressed)
-	//{
-	//	if (EvadeComponent)
-	//	{
-	//		EvadeComponemt->Evade(this);
-	//	}
-	//}
+	if (!EvadeComponent->GetIsEvading() && bEvadeButtonPressed)
+	{
+		if (EvadeComponent)
+		{
+			EvadeComponent->Evade(this);
+		}
+	}
 	
 	
-//}
+}

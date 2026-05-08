@@ -3,12 +3,13 @@
 
 #include "EvadeComponent.h"
 #include"MGP_2526Character.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
-UEvadeComponent::UEvadeComponent()
+UEvadeComponent::UEvadeComponent() :
 	EvadeSectionName(FName(TEXT(""))),
 	bIsEvading(false),
-	EvadeDirection(EEvadeDirection::none),
+	EvadeDirection(EEvadeDirection::None),
 	ResetEvadeDirectionTimeRate(0.1f)
 {
 
@@ -25,7 +26,7 @@ void UEvadeComponent::BeginPlay()
 	
 }
 
-void UEvadeComponent : : SendMovementVector(FVector2D MovementVector)
+void UEvadeComponent :: SendMovementVector(FVector2D MovementVector)
 {
 	SetEvadeDirection(MovementVector);
 
@@ -52,21 +53,21 @@ void UEvadeComponent::SetEvadeDirection(FVector2D MovementVector)
 	}
 	else
 	{
-		EvadeDirection = EEvadeDirection::none;
+		EvadeDirection = EEvadeDirection::None;
 	}
 }
 
-void UEvadeComponent::Evade(AMGP_2526Character* MGP_2526Character)
+void UEvadeComponent::Evade(AMGP_2526Character* MainCharacter)
 {
-	if (!MGP_2526Character) return;
+	if (!MainCharacter) return;
 	
-	if (EvadeDirection == EEvadeDirection::none) return;
+	if (EvadeDirection == EEvadeDirection::None) return;
 
 	bIsEvading = true;
 	
-	MainCharacterRef = MGP_2526Character;
+   MainCharacterRef = MainCharacter;
 
-	if (transparentMaterial)
+    if (TransparentMaterial)
 	{
 		if (MainCharacter)
 		{
@@ -74,35 +75,35 @@ void UEvadeComponent::Evade(AMGP_2526Character* MGP_2526Character)
 		}
 	}
 
-	if(mainCharacter)
+	if(MainCharacter)
 	{
 		UAnimInstance* AnimInstance = MainCharacter->GetMesh()->GetAnimInstance();
 
 		switch (EvadeDirection)
 		{
 
-		case EEvadeDirection::none:
-			EvadeSectionName = FName(TEXT("none"));
+		case EEvadeDirection::None:
+			EvadeSectionName = "";
 			break;
 
 		case EEvadeDirection::Evade_Backward:
-			EvadeSectionName = FName(TEXT("Evade_Backward"));
+			EvadeSectionName = "Evade_Backward";
 			break;
 
 		case EEvadeDirection::Evade_Right:
-			EvadeSectionName = FName(TEXT("Evade_Right"));
+			EvadeSectionName = "Evade_Right";
 			break;
 
 		case EEvadeDirection::Evade_Left:
-			EvadeSectionName = FName(TEXT("Evade_Left"));
+			EvadeSectionName = "Evade_Left";
 			break;
 
 		case EEvadeDirection::Evade_Forward:
-			EvadeSectionName = FName(TEXT("Evade_Forward"));
+			EvadeSectionName ="Evade_Forward";
 			break;
 		}
 
-		if(AnimInstance)
+        if(AnimInstance)
 		{
 			if (EvadeMontage)
 			{
@@ -122,13 +123,13 @@ void UEvadeComponent::Evade(AMGP_2526Character* MGP_2526Character)
 	}
 }
 
-void UEvadeComponent : : OnEvadeMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
+void UEvadeComponent :: OnEvadeMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!MainCharacterRef) return;
 
 	bIsEvading = false;
 
-	EvadeDirection = EEvadeDirection::none;
+	EvadeDirection = EEvadeDirection::None;
 
 	if (WeponMaterial)
 	{
@@ -144,13 +145,7 @@ void UEvadeComponent::OnEvadeMontageBlendedInEnded(UAnimMontage* Montage)
 	if (EvadeSound)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), EvadeSound);
+	}
 }
 
-// Called every frame
-void UEvadeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
 
