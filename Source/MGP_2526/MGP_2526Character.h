@@ -58,10 +58,34 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Evade", meta = (AllowPrivateAccess = "true"))
 	class UEvadeComponent* EvadeComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float MaxStamina = 100.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
+	float CurrentStamina = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaRegenRate = 20.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaRegenDelay = 1.0f;
+
+	FTimerHandle StaminaRegenTimerHandle;
+
+	bool bCanRegenStamina = true;
+
 public:
 
 	/** Constructor */
 	AMGP_2526Character();	
+
+	void ConsumeStamina(float Amount);
+
+	void RegenerateStamina();
+
+	bool HasEnoughStamina(float Amount) const;
+
 
 protected:
 
@@ -95,6 +119,15 @@ public:
 	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	float GetStaminaPercent() const
+	{
+		return MaxStamina > 0.f ? CurrentStamina / MaxStamina : 0.f;
+	}
+
 
 public:
 

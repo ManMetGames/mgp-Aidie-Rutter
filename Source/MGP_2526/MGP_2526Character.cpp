@@ -15,6 +15,8 @@
 
 AMGP_2526Character::AMGP_2526Character()
 {
+
+	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -70,7 +72,7 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
 
 		EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AMGP_2526Character::Evade);
-		EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Completed, this, &AMGP_2526Character::Evade);
+		//EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Completed, this, &AMGP_2526Character::Evade);
 		
 	}
 	else
@@ -150,6 +152,7 @@ void AMGP_2526Character::DoJumpEnd()
 
 void AMGP_2526Character::Evade(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemp, Warning, TEXT("EVADE INPUT FIRED"));
     bEvadeButtonPressed = Value.Get<bool>();
 	if (!EvadeComponent) return;
 	
@@ -162,4 +165,53 @@ void AMGP_2526Character::Evade(const FInputActionValue& Value)
 	}
 	
 	
+}
+
+bool AMGP_2526Character::HasEnoughStamina(float Amount) const
+{
+	return CurrentStamina >= Amount;
+}
+
+void AMGP_2526Character::ConsumeStamina(float Amount)
+{
+	CurrentStamina -= Amount;
+
+	CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
+
+	bCanRegenStamina = false;
+
+	GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		StaminaRegenTimerHandle,
+		this,
+		&AMGP_2526Character::RegenerateStamina,
+		0.1f,
+		true,
+		StaminaRegenDelay
+	);
+}
+
+void AMGP_2526Character::RegenerateStamina()
+{
+	if (!bCanRegenStamina)
+	{
+		bCanRegenStamina = true;
+	}
+
+	CurrentStamina += StaminaRegenRate * 0.1f;
+
+	CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
+
+	if (CurrentStamina >= MaxStamina)
+	{
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+	}
+}
+
+void AMGP_2526Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("Stamina: %f"), CurrentStamina);
 }

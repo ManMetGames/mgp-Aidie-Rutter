@@ -7,10 +7,10 @@
 
 // Sets default values for this component's properties
 UEvadeComponent::UEvadeComponent() :
-	EvadeSectionName(FName(TEXT(""))),
 	bIsEvading(false),
 	EvadeDirection(EEvadeDirection::None),
-	ResetEvadeDirectionTimeRate(0.1f)
+	EvadeSectionName(FName(TEXT("")))
+	//ResetEvadeDirectionTimeRate(0.1f)
 {
 
 
@@ -30,7 +30,7 @@ void UEvadeComponent :: SendMovementVector(FVector2D MovementVector)
 {
 	SetEvadeDirection(MovementVector);
 
-	GetWorld()->GetTimerManager().SetTimer(ResetEvadeDirectionTimerHandle, this, &UEvadeComponent::ResetEvadeDirection, ResetEvadeDirectionTimeRate);
+	//GetWorld()->GetTimerManager().SetTimer(ResetEvadeDirectionTimerHandle, this, &UEvadeComponent::ResetEvadeDirection, ResetEvadeDirectionTimeRate);
 }
 
 void UEvadeComponent::SetEvadeDirection(FVector2D MovementVector)
@@ -59,9 +59,21 @@ void UEvadeComponent::SetEvadeDirection(FVector2D MovementVector)
 
 void UEvadeComponent::Evade(AMGP_2526Character* MainCharacter)
 {
+	UE_LOG(LogTemp, Warning, TEXT("EVADE FUNCTION CALLED"));
+
 	if (!MainCharacter) return;
 	
 	if (EvadeDirection == EEvadeDirection::None) return;
+
+	const float EvadeCost = 25.f;
+
+	if (!MainCharacter->HasEnoughStamina(EvadeCost))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NOT ENOUGH STAMINA"));
+		return;
+	}
+
+	MainCharacter->ConsumeStamina(EvadeCost);
 
 	bIsEvading = true;
 	
@@ -107,7 +119,12 @@ void UEvadeComponent::Evade(AMGP_2526Character* MainCharacter)
 		{
 			if (EvadeMontage)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Montage: %s | Section: %s"),
+					*GetNameSafe(EvadeMontage),
+					*EvadeSectionName.ToString());
+
 				AnimInstance->Montage_Play(EvadeMontage);
+				UE_LOG(LogTemp, Warning, TEXT("PLAYING MONTAGE"));
 				AnimInstance->Montage_JumpToSection(EvadeSectionName);
 
 				OnMontageBlendingInEnded.BindUObject(this, &UEvadeComponent::OnEvadeMontageBlendedInEnded);
@@ -131,13 +148,13 @@ void UEvadeComponent :: OnEvadeMontageBlendingOut(UAnimMontage* Montage, bool bI
 
 	EvadeDirection = EEvadeDirection::None;
 
-	if (WeponMaterial)
-	{
-		if (MainCharacterRef)
-		{
-			MainCharacterRef->GetMesh()->SetMaterial(3, WeaponMaterial);
-		}
-	}
+	//if (WeponMaterial)
+	//{
+	//	if (MainCharacterRef)
+	//	{
+	//		MainCharacterRef->GetMesh()->SetMaterial(3, WeaponMaterial);
+	//	}
+	//}
 }
 
 void UEvadeComponent::OnEvadeMontageBlendedInEnded(UAnimMontage* Montage)
@@ -147,5 +164,10 @@ void UEvadeComponent::OnEvadeMontageBlendedInEnded(UAnimMontage* Montage)
 		UGameplayStatics::PlaySound2D(GetWorld(), EvadeSound);
 	}
 }
+
+//void UEvadeComponent ::ResetEvadeDirection()
+//{
+//	EvadeDirection = EEvadeDirection::None;
+//}
 
 

@@ -62,10 +62,11 @@ private:
 	void OnEvadeMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
 	void OnEvadeMontageBlendedInEnded(UAnimMontage* Montage);
 
-	FTimerHandle ResetEvadeDirectionTimerHandle;
+	//FTimerHandle ResetEvadeDirectionTimerHandle;
 
-	float ResetEvadeDirectionTimeRate;
-	void ResetEvadeDirection();
+	//float ResetEvadeDirectionTimeRate;
+
+	//void ResetEvadeDirection();
 
 
 
