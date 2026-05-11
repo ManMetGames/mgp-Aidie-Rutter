@@ -12,6 +12,8 @@
 #include "InputActionValue.h"
 #include "MGP_2526.h"
 #include "EvadeComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AMGP_2526Character::AMGP_2526Character()
 {
@@ -214,4 +216,18 @@ void AMGP_2526Character::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UE_LOG(LogTemp, Warning, TEXT("Stamina: %f"), CurrentStamina);
+}
+void AMGP_2526Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (WidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
+
+		if (Widget)
+		{
+			Widget->AddToViewport();
+		}
+	}
 }

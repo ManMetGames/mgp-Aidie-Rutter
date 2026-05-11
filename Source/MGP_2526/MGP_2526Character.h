@@ -34,7 +34,10 @@ class AMGP_2526Character : public ACharacter
 	UCameraComponent* FollowCamera;
 	
 protected:
+	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<class UUserWidget> WidgetClass;
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* JumpAction;
