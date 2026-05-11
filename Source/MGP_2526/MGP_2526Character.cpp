@@ -11,9 +11,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "MGP_2526.h"
+#include "EvadeComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AMGP_2526Character::AMGP_2526Character()
 {
+
+	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -46,6 +51,8 @@ AMGP_2526Character::AMGP_2526Character()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	EvadeComponent = CreateDefaultSubobject<UEvadeComponent>(TEXT("EvadeComponent"));
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -65,6 +72,10 @@ void AMGP_2526Character::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMGP_2526Character::Look);
+
+		EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Started, this, &AMGP_2526Character::Evade);
+		//EnhancedInputComponent->BindAction(EvadeAction, ETriggerEvent::Completed, this, &AMGP_2526Character::Evade);
+		
 	}
 	else
 	{
@@ -76,6 +87,12 @@ void AMGP_2526Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	
+	if (EvadeComponent)
+		EvadeComponent->SendMovementVector(MovementVector);
+
+	if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
+	if (GetController() == nullptr) return;
 
 	// route the input
 	DoMove(MovementVector.X, MovementVector.Y);
@@ -92,6 +109,8 @@ void AMGP_2526Character::Look(const FInputActionValue& Value)
 
 void AMGP_2526Character::DoMove(float Right, float Forward)
 {
+    if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
+
 	if (GetController() != nullptr)
 	{
 		// find out which way is forward
@@ -112,6 +131,7 @@ void AMGP_2526Character::DoMove(float Right, float Forward)
 
 void AMGP_2526Character::DoLook(float Yaw, float Pitch)
 {
+	if (EvadeComponent && EvadeComponent->GetIsEvading()) return;
 	if (GetController() != nullptr)
 	{
 		// add yaw and pitch input to controller
@@ -130,4 +150,84 @@ void AMGP_2526Character::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+void AMGP_2526Character::Evade(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("EVADE INPUT FIRED"));
+    bEvadeButtonPressed = Value.Get<bool>();
+	if (!EvadeComponent) return;
+	
+	if (!EvadeComponent->GetIsEvading() && bEvadeButtonPressed)
+	{
+		if (EvadeComponent)
+		{
+			EvadeComponent->Evade(this);
+		}
+	}
+	
+	
+}
+
+bool AMGP_2526Character::HasEnoughStamina(float Amount) const
+{
+	return CurrentStamina >= Amount;
+}
+
+void AMGP_2526Character::ConsumeStamina(float Amount)
+{
+	CurrentStamina -= Amount;
+
+	CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
+
+	bCanRegenStamina = false;
+
+	GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		StaminaRegenTimerHandle,
+		this,
+		&AMGP_2526Character::RegenerateStamina,
+		0.1f,
+		true,
+		StaminaRegenDelay
+	);
+}
+
+void AMGP_2526Character::RegenerateStamina()
+{
+	if (!bCanRegenStamina)
+	{
+		bCanRegenStamina = true;
+	}
+
+	CurrentStamina += StaminaRegenRate * 0.1f;
+
+	CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
+
+	if (CurrentStamina >= MaxStamina)
+	{
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+	}
+}
+
+void AMGP_2526Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UE_LOG(LogTemp, Warning, TEXT("Stamina: %f"), CurrentStamina);
+}
+void AMGP_2526Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (WidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), WidgetClass);
+
+		if (Widget)
+		{
+			Widget->AddToViewport();
+		}
+	}
 }
